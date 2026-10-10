@@ -30,7 +30,8 @@ else
 end
 -- ===== КОНЕЦ БЛОКА, ДАЛЬШЕ ВАШ ОСНОВНОЙ КОД =====
 
---                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v29)
+-- ... весь остальной код multiargos.lua ...
+--                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v28)
 -- =================================================================
 
 local rawScript = [==[
@@ -53,6 +54,7 @@ local function setupNextTeleport()
     end
 end
 
+-- Регистрируем с небольшой задержкой для стабильности API
 task.spawn(function()
     task.wait(1.5)
     setupNextTeleport()
@@ -156,6 +158,7 @@ local function killScript()
     if BillboardGui then BillboardGui:Destroy() end
     if ScreenGui then ScreenGui:Destroy() end
     
+    -- Сброс хитбокса
     local argos = workspace:FindFirstChild("Argos")
     if argos then
         local hrp = argos:FindFirstChild("HumanoidRootPart")
@@ -167,6 +170,7 @@ local function killScript()
     end
 end
 
+-- Проверка при запуске и отслеживание новых игроков
 local function checkPlayersAndKill()
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
@@ -209,6 +213,7 @@ UIStroke.Color = Color3.fromRGB(45, 45, 60)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
+-- Шапка (Header)
 local Header = Instance.new("Frame")
 Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 45)
@@ -249,6 +254,7 @@ SubTitle.TextSize = 10
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.Parent = Header
 
+-- Разделительная линия
 local Line = Instance.new("Frame")
 Line.Size = UDim2.new(1, -20, 0, 1)
 Line.Position = UDim2.new(0, 10, 0, 45)
@@ -256,6 +262,7 @@ Line.BackgroundColor3 = Color3.fromRGB(35, 35, 48)
 Line.BorderSizePixel = 0
 Line.Parent = MainFrame
 
+-- УВЕЛИЧЕННЫЙ СЧЕТЧИК ИГРОКОВ
 local PlayersCounter = Instance.new("TextLabel")
 PlayersCounter.Size = UDim2.new(1, -20, 0, 24)
 PlayersCounter.Position = UDim2.new(0, 10, 0, 50)
@@ -297,6 +304,7 @@ Players.PlayerRemoving:Connect(function()
     end
 end)
 
+-- Статус Hitbox
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -20, 0, 18)
 StatusLabel.Position = UDim2.new(0, 10, 0, 76)
@@ -308,6 +316,7 @@ StatusLabel.TextSize = 11
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.Parent = MainFrame
 
+-- Вспомогательная функция для стилизации кнопок
 local function createStyledButton(name, text, positionY, color)
     local btn = Instance.new("TextButton")
     btn.Name = name
@@ -328,6 +337,7 @@ local function createStyledButton(name, text, positionY, color)
     return btn
 end
 
+-- Ползунок Hitbox
 local SliderContainer = Instance.new("Frame")
 SliderContainer.Size = UDim2.new(1, -20, 0, 45)
 SliderContainer.Position = UDim2.new(0, 10, 0, 98)
@@ -388,11 +398,13 @@ SliderValueText.Font = Enum.Font.GothamBold
 SliderValueText.TextSize = 12
 SliderValueText.Parent = SliderContainer
 
+-- Кнопки функционала
 local EspToggleBtn = createStyledButton("EspBtn", "ESP: ВКЛЮЧЕН", 150, Color3.fromRGB(35, 110, 75))
 local EspTextToggleBtn = createStyledButton("EspTextBtn", "ИНФО ESP (HP/Дистанция): ВКЛ", 196, Color3.fromRGB(35, 110, 75))
 local TPButton = createStyledButton("TPBtn", "АВТО-ТП ПОД БОССА: ВЫКЛ [T]", 242, Color3.fromRGB(120, 45, 45))
 local FlyBtn = createStyledButton("FlyBtn", "FLY + NOCLIP: ВЫКЛ [X]", 288, Color3.fromRGB(120, 45, 45))
 
+-- Дополнительный футер
 local Footer = Instance.new("Frame")
 Footer.Size = UDim2.new(1, -20, 0, 50)
 Footer.Position = UDim2.new(0, 10, 0, 375)
@@ -415,6 +427,9 @@ FooterText.TextSize = 10
 FooterText.TextXAlignment = Enum.TextXAlignment.Left
 FooterText.Parent = Footer
 
+-- =================================================================
+--                     ЛОГИКА ПОЛЗУНКА (SLIDER)
+-- =================================================================
 local dragging = false
 SliderButton.MouseButton1Down:Connect(function() dragging = true end)
 UserInputService.InputEnded:Connect(function(input) 
@@ -437,6 +452,9 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- =================================================================
+--                         ESP ОБЪЕКТЫ
+-- =================================================================
 local EspText = Instance.new("TextLabel")
 EspText.Size = UDim2.new(1, 0, 1, 0)
 EspText.BackgroundTransparency = 1
@@ -446,6 +464,7 @@ EspText.Font = Enum.Font.GothamBold
 EspText.TextSize = 13
 EspText.Parent = BillboardGui
 
+-- Переключатели ESP
 EspToggleBtn.MouseButton1Click:Connect(function()
     if scriptKilled then return end
     _G.EspEnabled = not _G.EspEnabled
@@ -470,6 +489,9 @@ EspTextToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- =================================================================
+--                       АВТО-ТЕЛЕПОРТ ПОД БОССА
+-- =================================================================
 local function findArgos()
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and obj.Name:lower():find("argos") then
@@ -524,6 +546,9 @@ end
 
 TPButton.MouseButton1Click:Connect(toggleAutoTP)
 
+-- =================================================================
+--                     FLY + NOCLIP ЛОГИКА [X]
+-- =================================================================
 local function toggleFlyNoclip()
     if scriptKilled then return end
     flyNoclipEnabled = not flyNoclipEnabled
@@ -585,6 +610,9 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- =================================================================
+--                     СБРОС И ГОРЯЧИЕ КЛАВИШИ
+-- =================================================================
 local function resetArgosHitbox()
     local argos = workspace:FindFirstChild("Argos")
     if argos then
@@ -625,6 +653,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+-- =================================================================
+--               ОСНОВНОЙ ЦИКЛ ОБНОВЛЕНИЯ (RENDER STEPPED)
+-- =================================================================
 RunService.RenderStepped:Connect(function()
     if scriptKilled then return end
     local argos = workspace:FindFirstChild("Argos")
@@ -674,11 +705,12 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- =================================================================
---         ОБРАБОТЧИК СОБЫТИЙ (CHARGED SPEAR & EXORCISM) С ЗАЩИТОЙ
+--         АВТО-ПОДЪЕМ / УКЛОНЕНИЕ ПРИ ИВЕНТАХ (CHARGED SPEAR & EXORCISM)
 -- =================================================================
 task.spawn(function()
     local isLifted = false
     local liftTimerThread = nil
+    local originalCFrame = nil
     local hoverVelocity = nil
 
     local eventConfigs = {
@@ -690,7 +722,7 @@ task.spawn(function()
         local current = ReplicatedStorage
         local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "effects.sound.play"}
         for _, name in ipairs(path) do
-            current = current and current:WaitForChild(name, 5)
+            current = current:WaitForChild(name, 5)
             if not current then return nil end
         end
         return current
@@ -732,21 +764,11 @@ task.spawn(function()
 
                 if not isLifted then
                     isLifted = true
+                    originalCFrame = hrp.CFrame
                     
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = (hrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
                     
-                    if matchedEventName == "charged_spear_impact" then
-                        task.delay(1, function()
-                            if scriptKilled or not isLifted then return end
-                            local _, currentHrp = getHRP(2)
-                            if currentHrp then
-                                currentHrp.AssemblyLinearVelocity = Vector3.zero
-                                currentHrp.CFrame = (currentHrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
-                            end
-                        end)
-                    end
-
                     hoverVelocity = Instance.new("BodyVelocity")
                     hoverVelocity.Velocity = Vector3.new(0, 0, 0)
                     hoverVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
@@ -762,42 +784,31 @@ task.spawn(function()
                     if scriptKilled then return end
                     local currentChar, currentHrp = getHRP(2)
 
+                    if hoverVelocity then
+                        hoverVelocity:Destroy()
+                        hoverVelocity = nil
+                    end
+
                     if matchedEventName == "exorcism" then
                         if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            currentHrp.CFrame = (currentHrp.CFrame - Vector3.new(0, 100, 0)) * CFrame.new(100, 0, 0)
+                            currentHrp.CFrame = currentHrp.CFrame - Vector3.new(0, 100, 0)
                         end
-
-                        task.wait(1)
-
-                        if hoverVelocity then
-                            hoverVelocity:Destroy()
-                            hoverVelocity = nil
-                        end
-
-                        isLifted = false
-                        liftTimerThread = nil
-
-                        if not autoTpEnabled then
-                            startAutoTP()
-                        end
+                        startAutoTP()
                     else
-                        if hoverVelocity then
-                            hoverVelocity:Destroy()
-                            hoverVelocity = nil
-                        end
-
-                        if currentHrp then
+                        if currentHrp and originalCFrame then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
+                            currentHrp.CFrame = originalCFrame
                         end
 
                         if wasAutoTpActiveBeforeEvent then
                             startAutoTP()
                         end
-
-                        isLifted = false
-                        liftTimerThread = nil
                     end
+
+                    isLifted = false
+                    liftTimerThread = nil
+                    originalCFrame = nil
                 end)
             end
         end)
@@ -812,7 +823,7 @@ task.spawn(function()
         local current = ReplicatedStorage
         local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.cutscene.setSkip"}
         for _, name in ipairs(path) do
-            current = current and current:WaitForChild(name, 5)
+            current = current:WaitForChild(name, 5)
             if not current then return nil end
         end
         return current
@@ -843,7 +854,7 @@ task.spawn(function()
         local current = ReplicatedStorage
         local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.quickTime.sendSequence"}
         for _, name in ipairs(path) do
-            current = current and current:WaitForChild(name, 5)
+            current = current:WaitForChild(name, 5)
             if not current then return nil end
         end
         return current
@@ -876,7 +887,7 @@ task.spawn(function()
         local current = ReplicatedStorage
         local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.quickTime.sendMash"}
         for _, name in ipairs(path) do
-            current = current and current:WaitForChild(name, 5)
+            current = current:WaitForChild(name, 5)
             if not current then return nil end
         end
         return current
@@ -905,7 +916,7 @@ task.spawn(function()
         local current = ReplicatedStorage
         local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.dialog.send"}
         for _, name in ipairs(path) do
-            current = current and current:WaitForChild(name, 5)
+            current = current:WaitForChild(name, 5)
             if not current then return nil end
         end
         return current
@@ -1055,9 +1066,11 @@ task.spawn(function()
         return nil
     end
 
+    -- 1. Ждем 20 секунд перед началом цепочки
     task.wait(20)
     if scriptKilled then return end
 
+    -- 2. Надежная телепортация в ArgosSpawnZone
     local char, hrp = getHRP(10)
     local spawnZone = findArgosSpawnZone()
 
@@ -1068,9 +1081,11 @@ task.spawn(function()
         end)
     end
 
+    -- 3. Ждем 2 секунды
     task.wait(2)
     if scriptKilled then return end
 
+    -- 4. Включаем Авто-ТП под босса и Fly+Noclip
     if not autoTpEnabled then
         startAutoTP()
     end
@@ -1078,6 +1093,7 @@ task.spawn(function()
         toggleFlyNoclip()
     end
 
+    -- 5. Авто-клик мыши (LMB)
     while not isDropNearby and not scriptKilled do
         local vp = Camera.ViewportSize
         local centerX, centerY = vp.X / 2, vp.Y / 2
@@ -1089,6 +1105,7 @@ task.spawn(function()
 end)
 ]==]
 
+-- Передаем код в среду без использования формата строк string.format
 if getgenv then
     getgenv().ArgosSource = rawScript
 end
@@ -1100,10 +1117,4 @@ if qOT then
     end)
 end
 
-local success, err = pcall(function()
-    assert(loadstring(rawScript))()
-end)
-
-if not success then
-    warn("Ошибка запуска скрипта Argos: " .. tostring(err))
-end
+assert(loadstring(rawScript))()
