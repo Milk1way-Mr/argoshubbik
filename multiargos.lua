@@ -1,5 +1,5 @@
 -- ===== АВТОПЕРЕЗАПУСК ПОСЛЕ ТЕЛЕПОРТА =====
-local SCRIPT_URL = "https://raw.githubusercontent.com/Milk1way-Mr/argoshubbik/main/multiargos.lua?token=GHSAT0AAAAAAEL4WCI7MO6XBOAO4OQG5YQY2WJ5JPQ"
+local SCRIPT_URL = "https://raw.githubusercontent.com/Milk1way-Mr/argoshubbik/refs/heads/main/multiargos.lua"
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -31,7 +31,6 @@ end
 -- ===== КОНЕЦ БЛОКА, ДАЛЬШЕ ВАШ ОСНОВНОЙ КОД =====
 
 -- ... весь остальной код multiargos.lua ...
--- =================================================================
 --                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v28)
 -- =================================================================
 
