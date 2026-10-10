@@ -1,3 +1,36 @@
+-- ===== АВТОПЕРЕЗАПУСК ПОСЛЕ ТЕЛЕПОРТА =====
+local SCRIPT_URL = "https://raw.githubusercontent.com/Milk1way-Mr/argoshubbik/main/multiargos.lua?token=GHSAT0AAAAAAEL4WCI7MO6XBOAO4OQG5YQY2WJ5JPQ"
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Защита от двойного запуска в одном плейсе
+local env = (getgenv and getgenv()) or _G
+if env.__ARGOS_RUNNING then
+    return
+end
+env.__ARGOS_RUNNING = true
+
+-- Ставим этот же скрипт в очередь на следующий телепорт
+local qot = (syn and syn.queue_on_teleport)
+    or queue_on_teleport
+    or (fluxus and fluxus.queue_on_teleport)
+    or queueonteleport
+
+if qot then
+    local ok, err = pcall(function()
+        qot('loadstring(game:HttpGet("' .. SCRIPT_URL .. '"))()')
+    end)
+    if not ok then
+        warn("Не удалось поставить очередь телепорта: " .. tostring(err))
+    end
+else
+    warn("Эксплойт не поддерживает queue_on_teleport")
+end
+-- ===== КОНЕЦ БЛОКА, ДАЛЬШЕ ВАШ ОСНОВНОЙ КОД =====
+
+-- ... весь остальной код multiargos.lua ...
 -- =================================================================
 --                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v28)
 -- =================================================================
