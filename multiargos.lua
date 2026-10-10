@@ -30,7 +30,6 @@ else
 end
 -- ===== КОНЕЦ БЛОКА, ДАЛЬШЕ ВАШ ОСНОВНОЙ КОД =====
 
--- ... весь остальной код multiargos.lua ...
 --                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v28)
 -- =================================================================
 
@@ -710,7 +709,6 @@ end)
 task.spawn(function()
     local isLifted = false
     local liftTimerThread = nil
-    local originalCFrame = nil
     local hoverVelocity = nil
 
     local eventConfigs = {
@@ -764,11 +762,22 @@ task.spawn(function()
 
                 if not isLifted then
                     isLifted = true
-                    originalCFrame = hrp.CFrame
                     
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = (hrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
                     
+                    -- Если это копье, делаем второй аналогичный телепорт через 1 секунду в ту же точку
+                    if matchedEventName == "charged_spear_impact" then
+                        task.delay(1, function()
+                            if scriptKilled or not isLifted then return end
+                            local _, currentHrp = getHRP(2)
+                            if currentHrp then
+                                currentHrp.AssemblyLinearVelocity = Vector3.zero
+                                currentHrp.CFrame = (currentHrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
+                            end
+                        end)
+                    end
+
                     hoverVelocity = Instance.new("BodyVelocity")
                     hoverVelocity.Velocity = Vector3.new(0, 0, 0)
                     hoverVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
@@ -784,31 +793,46 @@ task.spawn(function()
                     if scriptKilled then return end
                     local currentChar, currentHrp = getHRP(2)
 
-                    if hoverVelocity then
-                        hoverVelocity:Destroy()
-                        hoverVelocity = nil
-                    end
-
                     if matchedEventName == "exorcism" then
+                        -- Для экзорцизма: спускаемся вниз на 100 и вправо на 100 на 1 секунду
                         if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            currentHrp.CFrame = currentHrp.CFrame - Vector3.new(0, 100, 0)
+                            -- Вправо в Roblox — это отрицательный CFrame.new по X (или можно сделать .CFrame * CFrame.new(100, -100, 0))
+                            currentHrp.CFrame = (currentHrp.CFrame - Vector3.new(0, 100, 0)) * CFrame.new(100, 0, 0)
                         end
-                        startAutoTP()
+
+                        task.wait(1)
+
+                        if hoverVelocity then
+                            hoverVelocity:Destroy()
+                            hoverVelocity = nil
+                        end
+
+                        isLifted = false
+                        liftTimerThread = nil
+
+                        -- Включаем функцию клавиши T (авто-ТП под босса)
+                        if not autoTpEnabled then
+                            startAutoTP()
+                        end
                     else
-                        if currentHrp and originalCFrame then
+                        -- Для копья (5 секунд)
+                        if hoverVelocity then
+                            hoverVelocity:Destroy()
+                            hoverVelocity = nil
+                        end
+
+                        if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            currentHrp.CFrame = originalCFrame
                         end
 
                         if wasAutoTpActiveBeforeEvent then
                             startAutoTP()
                         end
-                    end
 
-                    isLifted = false
-                    liftTimerThread = nil
-                    originalCFrame = nil
+                        isLifted = false
+                        liftTimerThread = nil
+                    end
                 end)
             end
         end)
@@ -1056,65 +1080,65 @@ end)
 -- =================================================================
 --         АВТО-СТАРТ ЦЕПОЧКИ (SPAWN -> TP & FLY -> AUTOCLICK)
 -- =================================================================
-task.spawn(function()
+Task.spawn(function()
     local function findArgosSpawnZone()
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj.Name == "ArgosSpawnZone" then
-                return obj
-            end
-        end
-        return nil
+        For _, obj in ipairs(workspace:GetDescendants()) do
+            If obj.Name == "ArgosSpawnZone" then
+                Return obj
+            End
+        End
+        Return nil
     end
 
     -- 1. Ждем 20 секунд перед началом цепочки
-    task.wait(20)
-    if scriptKilled then return end
+    Task.wait(20)
+    If scriptKilled then return end
 
     -- 2. Надежная телепортация в ArgosSpawnZone
-    local char, hrp = getHRP(10)
-    local spawnZone = findArgosSpawnZone()
+    Local char, hrp = getHRP(10)
+    Local spawnZone = findArgosSpawnZone()
 
-    if hrp and spawnZone then
-        pcall(function()
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.CFrame = spawnZone:GetPivot() * CFrame.new(0, 3, 0)
+    If hrp and spawnZone then
+        Pcall(function()
+            Hrp.AssemblyLinearVelocity = Vector3.zero
+            Hrp.CFrame = spawnZone:GetPivot() * CFrame.new(0, 3, 0)
         end)
-    end
+    End
 
     -- 3. Ждем 2 секунды
-    task.wait(2)
-    if scriptKilled then return end
+    Task.wait(2)
+    If scriptKilled then return end
 
     -- 4. Включаем Авто-ТП под босса и Fly+Noclip
-    if not autoTpEnabled then
-        startAutoTP()
-    end
-    if not flyNoclipEnabled then
-        toggleFlyNoclip()
-    end
+    If not autoTpEnabled then
+        StartAutoTP()
+    End
+    If not flyNoclipEnabled then
+        ToggleFlyNoclip()
+    End
 
     -- 5. Авто-клик мыши (LMB)
-    while not isDropNearby and not scriptKilled do
-        local vp = Camera.ViewportSize
-        local centerX, centerY = vp.X / 2, vp.Y / 2
+    While not isDropNearby and not scriptKilled do
+        Local vp = Camera.ViewportSize
+        Local centerX, centerY = vp.X / 2, vp.Y / 2
         VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
-        task.wait(0.02)
+        Task.wait(0.02)
         VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
-        task.wait(0.03)
+        Task.wait(0.03)
     end
 end)
 ]==]
 
 -- Передаем код в среду без использования формата строк string.format
-if getgenv then
-    getgenv().ArgosSource = rawScript
+If getgenv then
+    Getgenv().ArgosSource = rawScript
 end
 
-local qOT = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or queueonteleport
-if qOT then
-    pcall(function()
-        qOT(rawScript)
+Local qOT = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or queueonteleport
+If qOT then
+    Pcall(function()
+        QOT(rawScript)
     end)
-end
+End
 
-assert(loadstring(rawScript))()
+Assert(loadstring(rawScript))()
