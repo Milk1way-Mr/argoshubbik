@@ -30,7 +30,6 @@ else
 end
 -- ===== КОНЕЦ БЛОКА, ДАЛЬШЕ ВАШ ОСНОВНОЙ КОД =====
 
--- ... весь остальной код multiargos.lua ...
 --                ARGOS ULTIMATE ALL-IN-ONE (RECURSIVE FIXED v28)
 -- =================================================================
 
@@ -710,7 +709,6 @@ end)
 task.spawn(function()
     local isLifted = false
     local liftTimerThread = nil
-    local originalCFrame = nil
     local hoverVelocity = nil
 
     local eventConfigs = {
@@ -764,11 +762,22 @@ task.spawn(function()
 
                 if not isLifted then
                     isLifted = true
-                    originalCFrame = hrp.CFrame
                     
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = (hrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
                     
+                    -- Копье: второй аналогичный телепорт через 1 секунду в ту же точку
+                    if matchedEventName == "charged_spear_impact" then
+                        task.delay(1, function()
+                            if scriptKilled or not isLifted then return end
+                            local _, currentHrp = getHRP(2)
+                            if currentHrp then
+                                currentHrp.AssemblyLinearVelocity = Vector3.zero
+                                currentHrp.CFrame = (currentHrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
+                            end
+                        end)
+                    end
+
                     hoverVelocity = Instance.new("BodyVelocity")
                     hoverVelocity.Velocity = Vector3.new(0, 0, 0)
                     hoverVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
@@ -784,31 +793,45 @@ task.spawn(function()
                     if scriptKilled then return end
                     local currentChar, currentHrp = getHRP(2)
 
-                    if hoverVelocity then
-                        hoverVelocity:Destroy()
-                        hoverVelocity = nil
-                    end
-
                     if matchedEventName == "exorcism" then
+                        -- Экзорцизм: спуск вниз на 100 и вправо на 100 на 1 секунду
                         if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            currentHrp.CFrame = currentHrp.CFrame - Vector3.new(0, 100, 0)
+                            currentHrp.CFrame = (currentHrp.CFrame - Vector3.new(0, 100, 0)) * CFrame.new(100, 0, 0)
                         end
-                        startAutoTP()
+
+                        task.wait(1)
+
+                        if hoverVelocity then
+                            hoverVelocity:Destroy()
+                            hoverVelocity = nil
+                        end
+
+                        isLifted = false
+                        liftTimerThread = nil
+
+                        -- Включаем функцию клавиши T (авто-ТП под босса)
+                        if not autoTpEnabled then
+                            startAutoTP()
+                        end
                     else
-                        if currentHrp and originalCFrame then
+                        -- Копье (5 секунд)
+                        if hoverVelocity then
+                            hoverVelocity:Destroy()
+                            hoverVelocity = nil
+                        end
+
+                        if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            currentHrp.CFrame = originalCFrame
                         end
 
                         if wasAutoTpActiveBeforeEvent then
                             startAutoTP()
                         end
-                    end
 
-                    isLifted = false
-                    liftTimerThread = nil
-                    originalCFrame = nil
+                        isLifted = false
+                        liftTimerThread = nil
+                    end
                 end)
             end
         end)
