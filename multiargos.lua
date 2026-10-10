@@ -519,7 +519,7 @@ local function startAutoTP()
         
         local argosModel, argosHrp = findArgos()
         if argosModel and argosHrp then
-            local downOffset = 13
+            local downOffset = 12
             local backOffset = 0
             
             local targetPosition = (argosHrp.CFrame * CFrame.new(0, -downOffset, backOffset)).Position
