@@ -766,7 +766,7 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = (hrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
                     
-                    -- Если это копье, делаем второй аналогичный телепорт через 1 секунду в ту же точку
+                    -- Копье: второй аналогичный телепорт через 1 секунду
                     if matchedEventName == "charged_spear_impact" then
                         task.delay(1, function()
                             if scriptKilled or not isLifted then return end
@@ -794,10 +794,9 @@ task.spawn(function()
                     local currentChar, currentHrp = getHRP(2)
 
                     if matchedEventName == "exorcism" then
-                        -- Для экзорцизма: спускаемся вниз на 100 и вправо на 100 на 1 секунду
+                        -- Экзорцизм: спуск вниз на 100 и вправо на 100 на 1 секунду
                         if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
-                            -- Вправо в Roblox — это отрицательный CFrame.new по X (или можно сделать .CFrame * CFrame.new(100, -100, 0))
                             currentHrp.CFrame = (currentHrp.CFrame - Vector3.new(0, 100, 0)) * CFrame.new(100, 0, 0)
                         end
 
@@ -811,12 +810,12 @@ task.spawn(function()
                         isLifted = false
                         liftTimerThread = nil
 
-                        -- Включаем функцию клавиши T (авто-ТП под босса)
+                        -- Включаем функцию клавиши T
                         if not autoTpEnabled then
                             startAutoTP()
                         end
                     else
-                        -- Для копья (5 секунд)
+                        -- Копье (5 секунд)
                         if hoverVelocity then
                             hoverVelocity:Destroy()
                             hoverVelocity = nil
@@ -1080,65 +1079,65 @@ end)
 -- =================================================================
 --         АВТО-СТАРТ ЦЕПОЧКИ (SPAWN -> TP & FLY -> AUTOCLICK)
 -- =================================================================
-Task.spawn(function()
+task.spawn(function()
     local function findArgosSpawnZone()
-        For _, obj in ipairs(workspace:GetDescendants()) do
-            If obj.Name == "ArgosSpawnZone" then
-                Return obj
-            End
-        End
-        Return nil
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name == "ArgosSpawnZone" then
+                return obj
+            end
+        end
+        return nil
     end
 
     -- 1. Ждем 20 секунд перед началом цепочки
-    Task.wait(20)
-    If scriptKilled then return end
+    task.wait(20)
+    if scriptKilled then return end
 
     -- 2. Надежная телепортация в ArgosSpawnZone
-    Local char, hrp = getHRP(10)
-    Local spawnZone = findArgosSpawnZone()
+    local char, hrp = getHRP(10)
+    local spawnZone = findArgosSpawnZone()
 
-    If hrp and spawnZone then
-        Pcall(function()
-            Hrp.AssemblyLinearVelocity = Vector3.zero
-            Hrp.CFrame = spawnZone:GetPivot() * CFrame.new(0, 3, 0)
+    if hrp and spawnZone then
+        pcall(function()
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.CFrame = spawnZone:GetPivot() * CFrame.new(0, 3, 0)
         end)
-    End
+    end
 
     -- 3. Ждем 2 секунды
-    Task.wait(2)
-    If scriptKilled then return end
+    task.wait(2)
+    if scriptKilled then return end
 
     -- 4. Включаем Авто-ТП под босса и Fly+Noclip
-    If not autoTpEnabled then
-        StartAutoTP()
-    End
-    If not flyNoclipEnabled then
-        ToggleFlyNoclip()
-    End
+    if not autoTpEnabled then
+        startAutoTP()
+    end
+    if not flyNoclipEnabled then
+        toggleFlyNoclip()
+    end
 
     -- 5. Авто-клик мыши (LMB)
-    While not isDropNearby and not scriptKilled do
-        Local vp = Camera.ViewportSize
-        Local centerX, centerY = vp.X / 2, vp.Y / 2
+    while not isDropNearby and not scriptKilled do
+        local vp = Camera.ViewportSize
+        local centerX, centerY = vp.X / 2, vp.Y / 2
         VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
-        Task.wait(0.02)
+        task.wait(0.02)
         VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
-        Task.wait(0.03)
+        task.wait(0.03)
     end
 end)
 ]==]
 
 -- Передаем код в среду без использования формата строк string.format
-If getgenv then
-    Getgenv().ArgosSource = rawScript
+if getgenv then
+    getgenv().ArgosSource = rawScript
 end
 
-Local qOT = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or queueonteleport
-If qOT then
-    Pcall(function()
-        QOT(rawScript)
+local qOT = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or queueonteleport
+if qOT then
+    pcall(function()
+        qOT(rawScript)
     end)
-End
+end
 
-Assert(loadstring(rawScript))()
+assert(loadstring(rawScript))()
