@@ -189,7 +189,78 @@ end)
 if checkPlayersAndKill() then
     return
 end
+-- =================================================================
+--         АВТО-ОТВЕТ НА ДИАЛОГ "THE WRETCHED"
+-- =================================================================
+task.spawn(function()
+    local function getDialogSendEvent()
+        local current = ReplicatedStorage
+        local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.dialog.send"}
+        for _, name in ipairs(path) do
+            current = current:WaitForChild(name, 5)
+            if not current then return nil end
+        end
+        return current
+    end
 
+    local dialogSendEvent = getDialogSendEvent()
+    if dialogSendEvent then
+        dialogSendEvent.OnClientEvent:Connect(function(data)
+            if scriptKilled then return end
+            
+            -- Проверяем, что это именно нужный диалог "THE WRETCHED" с текстом "NO. NOT YET..."
+            local isWretched = false
+            if type(data) == "table" and data.title == "THE WRETCHED" then
+                if data.pages then
+                    for _, page in ipairs(data.pages) do
+                        if type(page) == "table" and page.text and page.text:find("NO. NOT YET") then
+                            isWretched = true
+                            break
+                        end
+                    end
+                end
+            end
+
+            if isWretched then
+                task.spawn(function()
+                    -- Ждем 5 секунд перед закрытием диалога
+                    task.wait(5)
+                    if scriptKilled then return end
+
+                    -- Получаем ивент закрытия диалога
+                    local closeEvent = ReplicatedStorage:WaitForChild("rbxts_include", 5)
+                        :WaitForChild("node_modules", 5)
+                        :WaitForChild("@rbxts", 5)
+                        :WaitForChild("remo", 5)
+                        :WaitForChild("src", 5)
+                        :WaitForChild("container", 5)
+                        :WaitForChild("ui.dialog.closed", 5)
+                        
+                    if closeEvent then
+                        closeEvent:FireServer()
+                    end
+
+                    -- Ждем еще 5 секунд перед голосом за рестарт экспедиции
+                    task.wait(5)
+                    if scriptKilled then return end
+
+                    -- Получаем ивент голосования за рестарт
+                    local restartEvent = ReplicatedStorage:WaitForChild("rbxts_include", 5)
+                        :WaitForChild("node_modules", 5)
+                        :WaitForChild("@rbxts", 5)
+                        :WaitForChild("remo", 5)
+                        :WaitForChild("src", 5)
+                        :WaitForChild("container", 5)
+                        :WaitForChild("ui.expeditionRestart.vote", 5)
+
+                    if restartEvent then
+                        restartEvent:FireServer("restart")
+                    end
+                end)
+            end
+        end)
+    end
+end)
 -- =================================================================
 --                             GUI СОЗДАНИЕ
 -- =================================================================
