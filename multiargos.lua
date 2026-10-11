@@ -189,6 +189,7 @@ end)
 if checkPlayersAndKill() then
     return
 end
+
 -- =================================================================
 --         АВТО-ОТВЕТ НА ДИАЛОГ "THE WRETCHED"
 -- =================================================================
@@ -208,7 +209,6 @@ task.spawn(function()
         dialogSendEvent.OnClientEvent:Connect(function(data)
             if scriptKilled then return end
             
-            -- Проверяем, что это именно нужный диалог "THE WRETCHED" с текстом "NO. NOT YET..."
             local isWretched = false
             if type(data) == "table" and data.title == "THE WRETCHED" then
                 if data.pages then
@@ -223,11 +223,9 @@ task.spawn(function()
 
             if isWretched then
                 task.spawn(function()
-                    -- Ждем 5 секунд перед закрытием диалога
                     task.wait(5)
                     if scriptKilled then return end
 
-                    -- Получаем ивент закрытия диалога
                     local closeEvent = ReplicatedStorage:WaitForChild("rbxts_include", 5)
                         :WaitForChild("node_modules", 5)
                         :WaitForChild("@rbxts", 5)
@@ -240,11 +238,9 @@ task.spawn(function()
                         closeEvent:FireServer()
                     end
 
-                    -- Ждем еще 5 секунд перед голосом за рестарт экспедиции
                     task.wait(5)
                     if scriptKilled then return end
 
-                    -- Получаем ивент голосования за рестарт
                     local restartEvent = ReplicatedStorage:WaitForChild("rbxts_include", 5)
                         :WaitForChild("node_modules", 5)
                         :WaitForChild("@rbxts", 5)
@@ -261,6 +257,85 @@ task.spawn(function()
         end)
     end
 end)
+
+-- =================================================================
+--         АВТО-ОТВЕТ НА ДИАЛОГ "???" И ТЕЛЕПОРТАЦИЯ К ARGOSALTER
+-- =================================================================
+task.spawn(function()
+    local function getDialogSendEvent()
+        local current = ReplicatedStorage
+        local path = {"rbxts_include", "node_modules", "@rbxts", "remo", "src", "container", "ui.dialog.send"}
+        for _, name in ipairs(path) do
+            current = current:WaitForChild(name, 5)
+            if not current then return nil end
+        end
+        return current
+    end
+
+    local dialogSendEvent = getDialogSendEvent()
+    if dialogSendEvent then
+        dialogSendEvent.OnClientEvent:Connect(function(data)
+            if scriptKilled then return end
+            
+            local isTargetDialog = false
+            if type(data) == "table" and data.title == "???" then
+                if data.pages then
+                    for _, page in ipairs(data.pages) do
+                        if type(page) == "table" and page.text and page.text:find("%.%.%.") then
+                            isTargetDialog = true
+                            break
+                        end
+                    end
+                end
+            end
+
+            if isTargetDialog then
+                task.spawn(function()
+                    task.wait(5)
+                    if scriptKilled then return end
+
+                    if autoTpEnabled then
+                        wasAutoTpActiveBeforeEvent = false
+                        stopAutoTP()
+                        TPButton.Text = "АВТО-ТП ПОД БОССА: ВЫКЛ [T]"
+                        TPButton.BackgroundColor3 = Color3.fromRGB(120, 45, 45)
+                    end
+
+                    if flyNoclipEnabled then
+                        flyNoclipEnabled = false
+                        stopFlyNoclip()
+                        FlyBtn.Text = "FLY + NOCLIP: ВЫКЛ [X]"
+                        FlyBtn.BackgroundColor3 = Color3.fromRGB(120, 45, 45)
+                    end
+
+                    local closeEvent = ReplicatedStorage:WaitForChild("rbxts_include", 5)
+                        :WaitForChild("node_modules", 5)
+                        :WaitForChild("@rbxts", 5)
+                        :WaitForChild("remo", 5)
+                        :WaitForChild("src", 5)
+                        :WaitForChild("container", 5)
+                        :WaitForChild("ui.dialog.closed", 5)
+                        
+                    if closeEvent then
+                        closeEvent:FireServer()
+                    end
+
+                    task.wait(0.2)
+                    if scriptKilled then return end
+
+                    local char, hrp = getHRP(2)
+                    local altar = workspace:FindFirstChild("ArgosAlter", true)
+                    
+                    if hrp and altar then
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.CFrame = altar:GetPivot() * CFrame.new(0, 3, 0)
+                    end
+                end)
+            end
+        end)
+    end
+end)
+
 -- =================================================================
 --                             GUI СОЗДАНИЕ
 -- =================================================================
@@ -471,8 +546,8 @@ SliderValueText.Parent = SliderContainer
 -- Кнопки функционала
 local EspToggleBtn = createStyledButton("EspBtn", "ESP: ВКЛЮЧЕН", 150, Color3.fromRGB(35, 110, 75))
 local EspTextToggleBtn = createStyledButton("EspTextBtn", "ИНФО ESP (HP/Дистанция): ВКЛ", 196, Color3.fromRGB(35, 110, 75))
-local TPButton = createStyledButton("TPBtn", "АВТО-ТП ПОД БОССА: ВЫКЛ [T]", 242, Color3.fromRGB(120, 45, 45))
-local FlyBtn = createStyledButton("FlyBtn", "FLY + NOCLIP: ВЫКЛ [X]", 288, Color3.fromRGB(120, 45, 45))
+TPButton = createStyledButton("TPBtn", "АВТО-ТП ПОД БОССА: ВЫКЛ [T]", 242, Color3.fromRGB(120, 45, 45))
+FlyBtn = createStyledButton("FlyBtn", "FLY + NOCLIP: ВЫКЛ [X]", 288, Color3.fromRGB(120, 45, 45))
 
 -- Дополнительный футер
 local Footer = Instance.new("Frame")
@@ -837,7 +912,6 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.zero
                     hrp.CFrame = (hrp.CFrame + Vector3.new(0, activeConfig.up, 0)) * CFrame.new(-activeConfig.left, 0, 0)
                     
-                    -- Копье: второй аналогичный телепорт через 1 секунду в ту же точку
                     if matchedEventName == "charged_spear_impact" then
                         task.delay(1, function()
                             if scriptKilled or not isLifted then return end
@@ -865,7 +939,6 @@ task.spawn(function()
                     local currentChar, currentHrp = getHRP(2)
 
                     if matchedEventName == "exorcism" then
-                        -- Экзорцизм: спуск вниз на 100 и вправо на 100 на 1 секунду
                         if currentHrp then
                             currentHrp.AssemblyLinearVelocity = Vector3.zero
                             currentHrp.CFrame = (currentHrp.CFrame - Vector3.new(0, 100, 0)) * CFrame.new(100, 0, 0)
@@ -881,12 +954,10 @@ task.spawn(function()
                         isLifted = false
                         liftTimerThread = nil
 
-                        -- Включаем функцию клавиши T (авто-ТП под босса)
                         if not autoTpEnabled then
                             startAutoTP()
                         end
                     else
-                        -- Копье (5 секунд)
                         if hoverVelocity then
                             hoverVelocity:Destroy()
                             hoverVelocity = nil
@@ -1160,11 +1231,9 @@ task.spawn(function()
         return nil
     end
 
-    -- 1. Ждем 20 секунд перед началом цепочки
     task.wait(20)
     if scriptKilled then return end
 
-    -- 2. Надежная телепортация в ArgosSpawnZone
     local char, hrp = getHRP(10)
     local spawnZone = findArgosSpawnZone()
 
@@ -1175,11 +1244,9 @@ task.spawn(function()
         end)
     end
 
-    -- 3. Ждем 2 секунды
     task.wait(2)
     if scriptKilled then return end
 
-    -- 4. Включаем Авто-ТП под босса и Fly+Noclip
     if not autoTpEnabled then
         startAutoTP()
     end
@@ -1187,7 +1254,6 @@ task.spawn(function()
         toggleFlyNoclip()
     end
 
-    -- 5. Авто-клик мыши (LMB)
     while not isDropNearby and not scriptKilled do
         local vp = Camera.ViewportSize
         local centerX, centerY = vp.X / 2, vp.Y / 2
@@ -1199,7 +1265,6 @@ task.spawn(function()
 end)
 ]==]
 
--- Передаем код в среду без использования формата строк string.format
 if getgenv then
     getgenv().ArgosSource = rawScript
 end
